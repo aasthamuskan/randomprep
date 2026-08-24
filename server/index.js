@@ -18,6 +18,20 @@ if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 app.use('/api/questions', questionRoutes);
 app.use('/api/practice', practiceRoutes);
 
+// Welcome / Root route
+app.get(['/', '/api'], (req, res) =>
+  res.json({
+    success: true,
+    message: '🚀 RandomPrep API Server is running smoothly!',
+    endpoints: {
+      health: '/api/health',
+      subjects: '/api/questions/subjects',
+      questions: '/api/questions',
+      practice: '/api/practice',
+    },
+  })
+);
+
 // Health check
 app.get('/api/health', (req, res) =>
   res.json({ success: true, message: 'TechPrep API running', groq: !!process.env.GROQ_API_KEY })
