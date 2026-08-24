@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const Groq = require('groq-sdk');
+
 const getCleanGroqKey = () => {
   const raw = (process.env.GROQ_API_KEY || '').trim();
   return raw.split(/\s+/)[0];
@@ -306,27 +308,57 @@ Respond ONLY with a valid JSON object — no markdown, no preamble, no extra tex
   "idealAnswer": "A clear model answer covering all the key concepts an interviewer expects"
 }`;
 
-    const completion = await client.chat.completions.create({
-      model: 'qwen/qwen3.6-27b',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.8,
-      max_tokens: 800,
-    });
+    const GROQ_MODELS = [
+      'llama-3.3-70b-versatile',
+      'llama-3.1-8b-instant',
+      'mixtral-8x7b-32768',
+      'gemma2-9b-it',
+    ];
 
-    let raw = completion.choices[0].message.content.trim();
-    raw = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      const err = new Error('AI returned invalid format');
-      err.statusCode = 500;
-      return next(err);
+    let raw = '';
+    for (const model of GROQ_MODELS) {
+      try {
+        const completion = await client.chat.completions.create({
+          model,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.8,
+          max_tokens: 800,
+        });
+        raw = completion.choices[0]?.message?.content?.trim() || '';
+        if (raw) break;
+      } catch (err) {
+        console.warn(`Groq model ${model} failed for question generation:`, err.message);
+      }
     }
 
-    const question = JSON.parse(jsonMatch[0]);
-    question.id = `q_${Date.now()}`;
+    raw = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
 
-    res.json({ success: true, question, source: 'ai' });
+    if (jsonMatch) {
+      try {
+        const question = JSON.parse(jsonMatch[0]);
+        question.id = `q_${Date.now()}`;
+        return res.json({ success: true, question, source: 'ai' });
+      } catch (e) {
+        console.warn('Failed to parse AI JSON:', e);
+      }
+    }
+
+    // Dynamic Fallback Question if AI fails or no key
+    const fallbackQuestion = {
+      _id: `fallback_${Date.now()}`,
+      questionNumber: 1,
+      subject: cat,
+      category: cat,
+      subTopic: 'General',
+      difficulty: diff,
+      question: `Explain a real-world scenario involving ${cat} where you identified a key challenge, applied best practices, and delivered an optimal solution.`,
+      expectedConcepts: ['problem identification', 'trade-offs', 'implementation details', 'impact'],
+      hints: ['Structure your response clearly using Situation, Action, and Results.'],
+      idealAnswer: `A comprehensive answer describing the core principles of ${cat}, the architectural/process trade-offs considered, and the measurable results delivered.`,
+    };
+
+    return res.json({ success: true, question: fallbackQuestion, source: 'fallback' });
   } catch (error) {
     next(error);
   }
