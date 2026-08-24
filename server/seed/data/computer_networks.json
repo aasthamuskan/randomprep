@@ -1,0 +1,115 @@
+[
+  {
+    "questionNumber": 1,
+    "subject": "Computer Networks",
+    "category": "Computer Networks",
+    "subTopic": "Network Fundamentals",
+    "topic": "Physical & Data Link Communication",
+    "difficulty": "Medium",
+    "question": "If two computers are connected directly using a cross-over cable, can they communicate without IP addresses? Why or why not?",
+    "answer": "Yes, they can communicate at the Data Link Layer (Layer 2) using MAC addresses, even without IP addresses. The Network Interface Card (NIC) recognizes frames by their destination MAC address. If one computer knows the MAC address of the other, raw Ethernet frames (or ARP requests) can be exchanged.\n\nHowever, without IP addresses (Layer 3 logical addressing), network layer routing is impossible, and higher-level protocols like HTTP, FTP, or SSH (which depend on TCP/IP stack) will fail. Practical application-level communication usually requires IP configuration.",
+    "keyTakeaways": [
+      "Layer 2 communication relies solely on MAC addresses.",
+      "Higher-layer protocols (TCP/UDP, HTTP) require Layer 3 IP addressing.",
+      "Cross-over cables connect two DTE devices directly without a switch/hub."
+    ]
+  },
+  {
+    "questionNumber": 2,
+    "subject": "Computer Networks",
+    "category": "Computer Networks",
+    "subTopic": "Network Fundamentals",
+    "topic": "Classful & Classless IP Addressing",
+    "difficulty": "Easy",
+    "question": "What are the different classes of IPv4 addresses and their respective ranges and default subnet masks?",
+    "answer": "Classful IPv4 addressing categorizes 32-bit addresses into five classes (A through E):\n\n- Class A: Range 0.0.0.0 – 127.255.255.255 | Leading bit: 0 | Default Mask: 255.0.0.0 (/8) | 128 Networks, 16M hosts/net.\n- Class B: Range 128.0.0.0 – 191.255.255.255 | Leading bits: 10 | Default Mask: 255.255.0.0 (/16) | 16,384 Networks, 65,536 hosts/net.\n- Class C: Range 192.0.0.0 – 223.255.255.255 | Leading bits: 110 | Default Mask: 255.255.255.0 (/24) | ~2M Networks, 256 hosts/net.\n- Class D: Range 224.0.0.0 – 239.255.255.255 | Leading bits: 1110 | Reserved for Multicasting.\n- Class E: Range 240.0.0.0 – 255.255.255.255 | Leading bits: 1111 | Reserved for Research & Experimental purposes.",
+    "keyTakeaways": [
+      "Class A, B, C are unicast; Class D is multicast; Class E is experimental.",
+      "Classful addressing was replaced by CIDR due to IPv4 address exhaustion."
+    ]
+  },
+  {
+    "questionNumber": 3,
+    "subject": "Computer Networks",
+    "category": "Computer Networks",
+    "subTopic": "Network Fundamentals",
+    "topic": "Subnetting & CIDR",
+    "difficulty": "Medium",
+    "question": "If a Class B network has a subnet mask of 255.255.248.0, what is the maximum number of usable hosts per subnet?",
+    "answer": "Subnet mask: 255.255.248.0 -> Binary: 11111111.11111111.11111000.00000000\n- Network + Subnet bits = 8 + 8 + 5 = 21 bits\n- Host bits = 32 - 21 = 11 bits\n- Total addresses per subnet = 2^11 = 2048\n\nReserved addresses:\n1. Network Address (all host bits 0)\n2. Broadcast Address (all host bits 1)\n\nUsable host addresses per subnet = 2048 - 2 = 2046 hosts.",
+    "keyTakeaways": [
+      "Usable hosts formula: (2^h) - 2, where h is the number of host bits.",
+      "Subtract 2 for Network ID and Broadcast ID."
+    ]
+  },
+  {
+    "questionNumber": 4,
+    "subject": "Computer Networks",
+    "category": "Computer Networks",
+    "subTopic": "Network Fundamentals",
+    "topic": "ARP & MAC Addressing",
+    "difficulty": "Medium",
+    "question": "Explain Address Resolution Protocol (ARP) and how it maps IP to MAC address within a local subnet.",
+    "answer": "ARP (Address Resolution Protocol) works at Layer 2/Layer 3 boundary to resolve a known logical IP address to a physical MAC address within a local network.\n\nProcess:\n1. When Host A wants to talk to Host B (IP known, MAC unknown), Host A broadcasts an 'ARP Request' (Destination MAC: FF:FF:FF:FF:FF:FF) asking 'Who has IP X.X.X.X?'.\n2. All hosts on the LAN receive the broadcast, but only Host B (owning IP X.X.X.X) responds with a unicast 'ARP Reply' containing its MAC address.\n3. Host A stores the IP-to-MAC mapping in its local ARP cache for subsequent communications.",
+    "keyTakeaways": [
+      "ARP Request is Broadcast; ARP Reply is Unicast.",
+      "ARP Cache reduces network overhead by storing mappings temporarily."
+    ]
+  },
+  {
+    "questionNumber": 5,
+    "subject": "Computer Networks",
+    "category": "Computer Networks",
+    "subTopic": "Routing & Switching",
+    "topic": "Switching Paradigms",
+    "difficulty": "Medium",
+    "question": "Differentiate between Store-and-Forward switching and Cut-Through switching.",
+    "answer": "1. Store-and-Forward Switching:\n   - The switch receives and buffers the entire Ethernet frame, verifies the Cyclic Redundancy Check (CRC) for errors, and only forwards valid frames.\n   - Latency: Higher (proportional to frame size).\n   - Error Handling: Excellent (corrupted frames are dropped early).\n\n2. Cut-Through Switching:\n   - The switch reads only the destination MAC address (first 6 bytes) and immediately starts forwarding the frame before the rest of the frame arrives.\n   - Latency: Extremely low (fixed latency).\n   - Error Handling: Poor (corrupted frames with FCS errors get propagated across the network).",
+    "keyTakeaways": [
+      "Store-and-Forward ensures error-free transmission at higher latency.",
+      "Cut-Through prioritizes microsecond-level latency, ideal for high-frequency trading networks."
+    ]
+  },
+  {
+    "questionNumber": 6,
+    "subject": "Computer Networks",
+    "category": "Computer Networks",
+    "subTopic": "Routing & Switching",
+    "topic": "Distance-Vector Protocols & Routing Loops",
+    "difficulty": "Hard",
+    "question": "How do routing loops occur in Distance-Vector protocols, and what mechanisms are used to prevent them?",
+    "answer": "Routing loops occur when inconsistent routing updates cause routers to repeatedly forward packets back and forth, leading to the 'count-to-infinity' problem.\n\nMechanisms to Prevent Loops:\n1. Split Horizon: Never advertise a route back out of the interface through which it was learned.\n2. Route Poisoning: When a route fails, advertise its metric as infinity (e.g., RIP hop count = 16) to instantly invalidate it across neighbors.\n3. Poison Reverse: Combined with split horizon, sends explicit infinite metric updates back to the source.\n4. Hold-Down Timers: Prevents routers from taking temporary bad updates for a failed route for a specified duration.",
+    "keyTakeaways": [
+      "Count-to-infinity is inherent to Distance-Vector (RIP, EIGRP).",
+      "Split Horizon and Route Poisoning eliminate count-to-infinity."
+    ]
+  },
+  {
+    "questionNumber": 7,
+    "subject": "Computer Networks",
+    "category": "Computer Networks",
+    "subTopic": "Transport & Application Layer",
+    "topic": "TCP 3-Way Handshake & Connection Teardown",
+    "difficulty": "Medium",
+    "question": "Explain TCP's 3-Way Handshake, 4-Way Teardown, and the SYN Flood vulnerability.",
+    "answer": "TCP 3-Way Handshake (Establishment):\n1. Client -> Server: SYN (seq = x)\n2. Server -> Client: SYN-ACK (seq = y, ack = x + 1)\n3. Client -> Server: ACK (seq = x + 1, ack = y + 1)\n\nTCP 4-Way Teardown (Termination):\n1. Sender -> Receiver: FIN\n2. Receiver -> Sender: ACK\n3. Receiver -> Sender: FIN\n4. Sender -> Receiver: ACK\n\nSYN Flood Attack:\nAn attacker sends thousands of SYN requests with spoofed source IPs but never responds to the server's SYN-ACK. The server's half-open connection queue fills up, causing Denial of Service (DoS). Mitigation: SYN Cookies, rate limiting.",
+    "keyTakeaways": [
+      "SYN/SYN-ACK/ACK synchronizes initial sequence numbers (ISN).",
+      "SYN cookies mitigate half-open connection queue exhaustion."
+    ]
+  },
+  {
+    "questionNumber": 8,
+    "subject": "Computer Networks",
+    "category": "Computer Networks",
+    "subTopic": "Transport & Application Layer",
+    "topic": "Flow Control vs Congestion Control",
+    "difficulty": "Hard",
+    "question": "How does TCP Congestion Control differ from Flow Control?",
+    "answer": "Flow Control (Receiver Protection):\n- Prevents the sender from overwhelming the receiver's buffer.\n- Managed using the Receiver Window (rwnd) field in the TCP header.\n\nCongestion Control (Network Protection):\n- Prevents the sender from overwhelming intermediate routers and network links.\n- Managed using the Congestion Window (cwnd) calculated dynamically by algorithms like Slow Start, Congestion Avoidance, Fast Retransmit, and Fast Recovery.\n- Effective Window Size = min(rwnd, cwnd).",
+    "keyTakeaways": [
+      "Flow control is end-to-end (buffer management via rwnd).",
+      "Congestion control protects the network core (cwnd via AIMD/Slow Start)."
+    ]
+  }
+]

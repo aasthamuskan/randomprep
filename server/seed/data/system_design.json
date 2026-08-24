@@ -1,0 +1,93 @@
+[
+  {
+    "questionNumber": 1,
+    "subject": "System Design",
+    "subTopic": "High-Level Design (HLD)",
+    "difficulty": "Hard",
+    "question": "What are the core components of a High-Level Design (HLD) and how do you choose between Monolithic vs Microservices Architecture?",
+    "description": "Architectural blueprints, scalability trade-offs, and microservices decomposition rules.",
+    "codeSnippet": "// Monolith Architecture: UI Layer -> Monolithic App -> Shared DB\n// Microservices Architecture: Client -> API Gateway -> [User Service | Order Service | Payment Service] -> Independent DBs",
+    "idealAnswer": "HLD provides a bird's-eye architectural view of system components (UI, API Gateway, Load Balancers, Services, Caches, DBs).\n- **Monolithic**: Single deployable unit. Ideal for startups, MVPs, small teams, and lower initial operational complexity.\n- **Microservices**: Decomposed by business domain (DDD Bounded Contexts). Independent scaling, fault isolation, and autonomous CI/CD pipelines. Ideal for large-scale systems and distributed teams.",
+    "expectedConcepts": ["High-Level Design", "Monolith vs Microservices", "Domain-Driven Design (DDD)", "Independent Scalability"],
+    "hints": ["Monolith is single deployable; Microservices decompose by business domains."],
+    "references": []
+  },
+  {
+    "questionNumber": 2,
+    "subject": "System Design",
+    "subTopic": "High-Level Design (HLD)",
+    "difficulty": "Hard",
+    "question": "How does the CAP Theorem guide distributed database selection (RDBMS vs NoSQL)?",
+    "description": "Consistency, Availability, and Partition Tolerance trade-offs.",
+    "codeSnippet": "// CAP Theorem: Consistency (C), Availability (A), Partition Tolerance (P)\n// CP Systems (RDBMS / MongoDB): Prioritize strict data consistency (Banking/Transactions)\n// AP Systems (Cassandra / DynamoDB): Prioritize high availability and speed (Social Feeds)",
+    "idealAnswer": "The **CAP Theorem** states that a distributed data system can guarantee at most 2 out of 3 properties during network partitions:\n1. **Consistency (C)**: Every read receives the most recent write.\n2. **Availability (A)**: Every non-failing node returns a response.\n3. **Partition Tolerance (P)**: System operates despite network message losses.\n- **CP Systems** (PostgreSQL, MongoDB): Choose strict consistency over availability during partitions.\n- **AP Systems** (Cassandra, DynamoDB): Choose eventual consistency and high availability.",
+    "expectedConcepts": ["CAP Theorem", "Consistency vs Availability", "Partition Tolerance", "Eventual Consistency"],
+    "hints": ["CP prioritizes data consistency; AP prioritizes high uptime availability."],
+    "references": []
+  },
+  {
+    "questionNumber": 3,
+    "subject": "System Design",
+    "subTopic": "Low-Level Design (LLD)",
+    "difficulty": "Hard",
+    "question": "What is Low-Level Design (LLD) and how do database indexes (B-Trees) optimize query performance?",
+    "description": "Class diagrams, OOP principles, and index data structures.",
+    "codeSnippet": "-- Relational DB B-Tree Index Creation:\nCREATE INDEX idx_user_email ON users(email);\n-- Query lookup changes from O(N) full table scan to O(log N) B-Tree node traversal",
+    "idealAnswer": "**LLD (Low-Level Design)** translates abstract HLD architecture into detailed class diagrams, method signatures, design patterns, and database schemas ready for implementation.\n\n**Database Indexing** creates auxiliary B-Tree or Hash structures mapping indexed column values to row pointers on disk. This reduces query search time from `O(N)` full table scans to `O(log N)` logarithmic tree traversals, dramatically decreasing disk I/O.",
+    "expectedConcepts": ["Low-Level Design", "B-Tree Indexes", "Disk I/O Reduction", "O(log N) Query Lookup"],
+    "hints": ["Index transforms full table scans into fast B-Tree lookups."],
+    "references": []
+  },
+  {
+    "questionNumber": 4,
+    "subject": "System Design",
+    "subTopic": "Design Patterns",
+    "difficulty": "Medium",
+    "question": "Explain the Singleton, Factory, and Strategy Design Patterns in LLD with use cases.",
+    "description": "Creational and Behavioral object-oriented design patterns.",
+    "codeSnippet": "// Strategy Pattern (Selecting payment algorithm at runtime):\npublic interface PaymentStrategy { void pay(int amount); }\npublic class CreditCardStrategy implements PaymentStrategy { public void pay(int amount) { /* ... */ } }\npublic class UPIStrategy implements PaymentStrategy { public void pay(int amount) { /* ... */ } }",
+    "idealAnswer": "- **Singleton**: Ensures a class has only one global instance (e.g., DB Connection Pool, Logger).\n- **Factory**: Centralizes object creation logic based on runtime inputs without exposing instantiation logic to the client (e.g., `ShapeFactory.getShape(\"Circle\")`).\n- **Strategy**: Encapsulates interchangeable algorithms inside separate classes, allowing clients to swap logic dynamically at runtime without `if-else` chains (e.g., Payment strategies).",
+    "expectedConcepts": ["Singleton Pattern", "Factory Pattern", "Strategy Pattern", "Open/Closed Principle"],
+    "hints": ["Singleton = 1 instance; Factory = centralized object creation; Strategy = interchangeable algorithms."],
+    "references": []
+  },
+  {
+    "questionNumber": 5,
+    "subject": "System Design",
+    "subTopic": "Design Patterns",
+    "difficulty": "Medium",
+    "question": "What is the Observer Design Pattern and how does it power event-driven architectures?",
+    "description": "One-to-many publish-subscribe dependency pattern.",
+    "codeSnippet": "public interface Observer { void update(String event); }\npublic class Subject {\n    private List<Observer> observers = new ArrayList<>();\n    public void subscribe(Observer o) { observers.add(o); }\n    public void notifyAll(String msg) { for(Observer o : observers) o.update(msg); }\n}",
+    "idealAnswer": "The **Observer Pattern** defines a one-to-many relationship between a Subject (Publisher) and multiple Observers (Subscribers). When the Subject's state changes, all registered Observers are automatically notified. This decouples event sources from listeners, forming the foundation of GUI event listeners, reactive programming, and message queues.",
+    "expectedConcepts": ["Observer Pattern", "Publish-Subscribe", "Decoupling", "Event Notification"],
+    "hints": ["Subject maintains a list of observers and notifies them when state changes."],
+    "references": []
+  },
+  {
+    "questionNumber": 6,
+    "subject": "System Design",
+    "subTopic": "Database Architecture & Scalability",
+    "difficulty": "Hard",
+    "question": "How do Database Sharding, Replication, and Caching enable massive horizontal scalability?",
+    "description": "Read/write splitting, horizontal partitioning, and Redis in-memory layers.",
+    "codeSnippet": "// Client -> Redis Cache (O(1) hit)\n// Cache Miss -> Read Replica (Master DB handles writes, Slave DBs handle reads)\n// Sharding -> Hash(User_ID) % Num_Shards determines DB partition",
+    "idealAnswer": "- **Caching (Redis/Memcached)**: Stores hot data in RAM to eliminate repeated database disk reads.\n- **Database Replication**: Master DB handles writes and syncs to multiple Read Replicas to scale read throughput.\n- **Sharding (Horizontal Partitioning)**: Distributes rows across separate physical DB servers based on a shard key (e.g. `user_id`), breaking single-node storage and write bottlenecks.",
+    "expectedConcepts": ["Database Sharding", "Master-Slave Replication", "In-Memory Caching", "Horizontal Scaling"],
+    "hints": ["Cache reduces DB hits; Replicas scale reads; Sharding partitions large datasets across nodes."],
+    "references": []
+  },
+  {
+    "questionNumber": 7,
+    "subject": "System Design",
+    "subTopic": "Distributed Systems & Security",
+    "difficulty": "Hard",
+    "question": "How do Load Balancers, API Gateways, and Rate Limiters protect distributed microservices?",
+    "description": "Traffic distribution, token bucket rate limiting, and centralized security.",
+    "codeSnippet": "// Client -> CDN -> Load Balancer (Round-Robin / Least Conn) -> API Gateway (Rate Limiter / JWT Auth) -> Microservice",
+    "idealAnswer": "- **Load Balancer (Nginx/AWS ELB)**: Distributes incoming web traffic across redundant server instances using algorithms like Round Robin or Least Connections.\n- **API Gateway**: Acts as single entry point for authentication, routing, and response aggregation.\n- **Rate Limiter (Token Bucket / Leaky Bucket)**: Prevents DDoS attacks and API abuse by capping requests per user/IP per window.",
+    "expectedConcepts": ["Load Balancing", "API Gateway", "Rate Limiting", "Token Bucket Algorithm"],
+    "hints": ["Load Balancers distribute traffic; API Gateways handle auth; Rate Limiters prevent abuse."],
+    "references": []
+  }
+]

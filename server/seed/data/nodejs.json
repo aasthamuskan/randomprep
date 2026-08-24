@@ -1,0 +1,44 @@
+[
+  {
+    "questionNumber": 1,
+    "subject": "Node.js & Backend",
+    "category": "Node.js & Backend",
+    "subTopic": "Architecture & Event Loop",
+    "topic": "Single-Threaded Architecture & Libuv",
+    "difficulty": "Hard",
+    "question": "How does Node.js achieve non-blocking concurrency despite running on a single main thread?",
+    "answer": "Node.js operates on a single-threaded Event Loop (V8 engine), but delegates asynchronous I/O tasks to the operating system kernel or to Libuv's C++ worker thread pool (4 default threads).\n\nEvent Loop Phases:\n1. Timers (setTimeout, setInterval)\n2. Pending Callbacks (I/O callbacks)\n3. Idle, Prepare\n4. Poll (retrieves new I/O events)\n5. Check (setImmediate)\n6. Close Callbacks (socket.on('close'))\n\nMicrotasks (process.nextTick and Promises) execute immediately after the current operation finishes, before moving to the next Event Loop phase.",
+    "keyTakeaways": [
+      "I/O operations (file, network, DB) are non-blocking.",
+      "process.nextTick queue takes priority over setImmediate."
+    ]
+  },
+  {
+    "questionNumber": 2,
+    "subject": "Node.js & Backend",
+    "category": "Node.js & Backend",
+    "subTopic": "Streams & Buffers",
+    "topic": "Streams, Buffers & Piping",
+    "difficulty": "Medium",
+    "question": "Explain Streams, Buffers, and Backpressure in Node.js.",
+    "answer": "Buffers:\nFixed-size raw binary memory allocation outside V8 heap for handling binary data streams.\n\nStreams:\nHandling data in continuous chunks rather than loading entire files into RAM. Four types: Readable, Writable, Duplex, Transform.\n\nBackpressure:\nOccurs when a Writable stream receives data faster than it can write/process. Using stream.pipe(dest) automatically manages backpressure by pausing the Readable stream when destination buffer overflows.",
+    "keyTakeaways": [
+      "Streams prevent memory exhaustion when transferring large files or video feeds.",
+      "Piping automatically handles backpressure management."
+    ]
+  },
+  {
+    "questionNumber": 3,
+    "subject": "Node.js & Backend",
+    "category": "Node.js & Backend",
+    "subTopic": "Cluster & Child Processes",
+    "topic": "Multi-Core Scaling & Child Processes",
+    "difficulty": "Hard",
+    "question": "How does the Cluster module allow Node.js applications to utilize multi-core CPUs?",
+    "answer": "Since Node.js runs on a single main thread, it can only use 1 CPU core by default. The Cluster module spawns multiple worker processes (one per CPU core) that share the same server port.\n\nMaster Process:\nCoordinates worker creation and monitors worker health using cluster.fork().\n\nWorker Processes:\nIndividual Node.js instances receiving incoming HTTP connections distributed by the master (via round-robin load balancing on IPC sockets).",
+    "keyTakeaways": [
+      "Cluster module utilizes all available CPU cores for high-throughput production servers.",
+      "PM2 process manager automates cluster mode and zero-downtime reloads."
+    ]
+  }
+]

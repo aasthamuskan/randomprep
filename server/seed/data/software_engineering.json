@@ -1,0 +1,58 @@
+[
+  {
+    "questionNumber": 1,
+    "subject": "Software Engineering",
+    "category": "Software Engineering",
+    "subTopic": "OOP Core Principles",
+    "topic": "SOLID Principles & Composition vs Inheritance",
+    "difficulty": "Medium",
+    "question": "Explain the SOLID principles and why 'Composition over Inheritance' is preferred in object-oriented design.",
+    "answer": "SOLID Principles:\n1. Single Responsibility Principle (SRP): A class should have only one reason to change.\n2. Open/Closed Principle (OCP): Software entities should be open for extension, but closed for modification.\n3. Liskov Substitution Principle (LSP): Subtypes must be substitutable for their base types without breaking application correctness.\n4. Interface Segregation Principle (ISP): Clients should not be forced to depend on interfaces they do not use.\n5. Dependency Inversion Principle (DIP): High-level modules should not depend on low-level modules; both should depend on abstractions.\n\nComposition over Inheritance:\n- Inheritance creates tight coupling and exposes base class implementation details (fragile base class problem).\n- Composition wraps reusable objects, allowing behavior to be changed dynamically at runtime by injecting interfaces.",
+    "keyTakeaways": [
+      "SOLID ensures maintainable, decoupled, and testable codebases.",
+      "Composition provides runtime flexibility without fragile inheritance hierarchies."
+    ]
+  },
+  {
+    "questionNumber": 2,
+    "subject": "Software Engineering",
+    "category": "Software Engineering",
+    "subTopic": "Software Development Life Cycle (SDLC)",
+    "topic": "Agile, Waterfall, V-Model & Technical Debt",
+    "difficulty": "Medium",
+    "question": "Compare Agile, Waterfall, and V-Model SDLC paradigms and explain how technical debt accumulates.",
+    "answer": "1. Waterfall: Linear and sequential. Requirements fixed upfront. High risk if requirements change late.\n2. V-Model: Execution proceeds in parallel with verification/validation phase for each stage.\n3. Agile: Iterative and incremental (Sprints). High adaptability to changing customer requirements.\n\nTechnical Debt:\nAccumulates when short-term workarounds or rapid delivery take priority over refactoring, clean architecture, or documentation. Managed by enforcing Definition of Done (DoD), automated regression testing, and dedicated refactoring sprints.",
+    "keyTakeaways": [
+      "Agile prioritizes customer feedback and working software over documentation.",
+      "Unmanaged technical debt causes software rot and skyrocketing maintenance costs."
+    ]
+  },
+  {
+    "questionNumber": 3,
+    "subject": "Software Engineering",
+    "category": "Software Engineering",
+    "subTopic": "Software Design & Code Quality",
+    "topic": "Coupling, Cohesion & Cyclomatic Complexity",
+    "difficulty": "Hard",
+    "question": "What is the relationship between High Cohesion, Low Coupling, and Cyclomatic Complexity?",
+    "answer": "High Cohesion:\nDegree to which elements inside a module belong together. High cohesion = single, well-defined focus.\n\nLow Coupling:\nDegree of interdependence between software modules. Low coupling = changes in one module don't break others.\n\nCyclomatic Complexity:\nQuantitative measure of independent execution paths in source code (M = E - N + 2P or number of decision points + 1). High complexity (>10-15) signals code smells, high defect risk, and hard unit testing.",
+    "keyTakeaways": [
+      "Goal: High Cohesion + Low Coupling = modular, maintainable design.",
+      "Lower Cyclomatic Complexity improves readability and test coverage."
+    ]
+  },
+  {
+    "questionNumber": 4,
+    "subject": "Software Engineering",
+    "category": "Software Engineering",
+    "subTopic": "Testing & Maintenance",
+    "topic": "Testing Pyramid & Mutation Testing",
+    "difficulty": "Medium",
+    "question": "Explain the Testing Pyramid and how Mutation Testing evaluates test suite quality.",
+    "answer": "Testing Pyramid:\n1. Unit Tests (Base): High volume, fast execution, isolated testing of individual functions.\n2. Integration Tests (Middle): Medium volume, tests interaction between components/services.\n3. End-to-End (E2E) / UI Tests (Top): Low volume, slow, validates full user workflows.\n\nMutation Testing:\nIntroduces small artificial bugs ('mutants', e.g., changing >= to >) into source code. If tests fail ('kill mutant'), the test suite is effective. If tests pass ('mutant survives'), test coverage/assertion quality is lacking.",
+    "keyTakeaways": [
+      "Unit tests form the foundation of scalable CI/CD pipelines.",
+      "Mutation testing measures fault-detection effectiveness beyond simple code coverage %."
+    ]
+  }
+]

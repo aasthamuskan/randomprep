@@ -1,0 +1,53 @@
+[
+  {
+    "questionId": "q_1787400755381",
+    "question": "Explain the fundamental trade-offs between using a Hash Map and a Binary Search Tree for storing key-value pairs, specifically regarding time complexity for lookups and the ability to iterate over keys in sorted order.",
+    "category": "DSA",
+    "difficulty": "Medium",
+    "answer": "The",
+    "timeTaken": 14,
+    "score": 0,
+    "feedback": "The candidate's response is incomplete and consists only of the word 'The', providing no technical content to evaluate. Consequently, none of the required concepts regarding time complexity or ordering properties were addressed.",
+    "strengths": "None, as the answer was empty.",
+    "improvements": "The candidate needs to provide a complete explanation covering the O(1) vs O(log n) lookup trade-offs and the inherent ordering capabilities of Binary Search Trees compared to Hash Maps.",
+    "matchedConcepts": [],
+    "totalConcepts": 4,
+    "idealAnswer": "Hash Maps provide average O(1) lookup time due to direct indexing via hash functions but do not maintain order, making sorted iteration impossible without additional sorting. In contrast, Balanced Binary Search Trees guarantee O(log n) lookup, insertion, and deletion while inherently maintaining keys in sorted order, enabling efficient range queries and ordered iteration.",
+    "id": "1787400956503",
+    "createdAt": "2026-08-22T12:15:56.503Z"
+  },
+  {
+    "questionId": "q_1787400755381",
+    "question": "Explain the fundamental trade-offs between using a Hash Map and a Binary Search Tree for storing key-value pairs, specifically regarding time complexity for lookups and the ability to iterate over keys in sorted order.",
+    "category": "DSA",
+    "difficulty": "Medium",
+    "answer": "[Voice answer submitted]",
+    "timeTaken": 5,
+    "score": 0,
+    "feedback": "The candidate submitted a voice answer placeholder without providing any textual content for evaluation. Consequently, no technical concepts could be assessed or verified against the expected criteria.",
+    "strengths": "No strengths could be identified as no substantive answer was provided.",
+    "improvements": "The candidate needs to provide a written response detailing the time complexity differences (O(1) vs O(log n)) and the ordering capabilities of Hash Maps versus Binary Search Trees.",
+    "matchedConcepts": [],
+    "totalConcepts": 4,
+    "idealAnswer": "Hash Maps provide average O(1) lookup time due to direct indexing via hash functions but do not maintain order, making sorted iteration impossible without additional sorting. In contrast, Balanced Binary Search Trees guarantee O(log n) lookup, insertion, and deletion while inherently maintaining keys in sorted order, enabling efficient range queries and ordered iteration.",
+    "id": "1787400769060",
+    "createdAt": "2026-08-22T12:12:49.060Z"
+  },
+  {
+    "questionId": "q_1787338387824",
+    "question": "In a distributed system, how does the Two-Phase Commit (2PC) protocol differ from the Saga pattern in terms of transaction consistency and availability, and why might you choose one over the other for a microservices architecture?",
+    "category": "System Design",
+    "difficulty": "Hard",
+    "answer": "[Voice answer submitted]",
+    "timeTaken": 16,
+    "score": 0,
+    "feedback": "The candidate submitted a voice answer placeholder without providing any textual content for evaluation. Consequently, it is impossible to assess their understanding of the Two-Phase Commit protocol or the Saga pattern.",
+    "strengths": "No strengths could be identified as no substantive answer was provided.",
+    "improvements": "The candidate needs to provide a written response that explicitly compares 2PC and Saga patterns, addressing ACID vs BASE consistency models and availability trade-offs.",
+    "matchedConcepts": [],
+    "totalConcepts": 5,
+    "idealAnswer": "2PC provides strong ACID consistency but blocks resources during the commit phase, reducing availability and performance under load. The Saga pattern uses eventual consistency with compensating transactions, offering higher availability and scalability for microservices at the cost of complex error handling and potential data inconsistency windows.",
+    "id": "1787338408947",
+    "createdAt": "2026-08-21T18:53:28.948Z"
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "questionNumber": 1,
+    "subject": "Frontend & Web Technologies",
+    "category": "Frontend & Web Technologies",
+    "subTopic": "CSS & Modern Styling",
+    "topic": "CSS Box Model, Flexbox & Grid",
+    "difficulty": "Easy",
+    "question": "What is the CSS Box Model, and how does box-sizing: border-box differ from content-box?",
+    "answer": "The CSS Box Model defines element layout as rectangular boxes comprising Content, Padding, Border, and Margin.\n\n- content-box (Default): width & height apply ONLY to content. Padding and border are added ON TOP, increasing rendered width (Total Width = width + padding + border).\n- border-box: width & height INCLUDE content, padding, and border. The content box shrinks to fit inside the specified width, making responsive layout calculations predictable.",
+    "keyTakeaways": [
+      "border-box is the modern industry standard for universal reset (* { box-sizing: border-box; }).",
+      "Flexbox is 1D (rows OR columns); Grid is 2D (rows AND columns simultaneously)."
+    ]
+  },
+  {
+    "questionNumber": 2,
+    "subject": "Frontend & Web Technologies",
+    "category": "Frontend & Web Technologies",
+    "subTopic": "Tailwind CSS",
+    "topic": "Utility-First Architecture & JIT Compiler",
+    "difficulty": "Medium",
+    "question": "Explain the Utility-First approach in Tailwind CSS and how production CSS purging works.",
+    "answer": "Utility-First Approach:\nInstead of writing custom CSS rules per component, styling is applied using low-level utility classes directly in HTML/JSX (e.g., flex items-center justify-between p-4 bg-slate-900 text-white rounded-xl).\n\nProduction Optimization:\nTailwind's Just-In-Time (JIT) engine scans specified template files (configured in content array of tailwind.config.js) and generates ONLY the CSS classes actually used in project source code. Unused classes are purged, resulting in tiny production CSS bundles (often <10KB).",
+    "keyTakeaways": [
+      "Avoid dynamic class string concatenation (bg-${color}-500); use complete class names.",
+      "Safelist or complete static strings ensure JIT compiler detects classes."
+    ]
+  },
+  {
+    "questionNumber": 3,
+    "subject": "Frontend & Web Technologies",
+    "category": "Frontend & Web Technologies",
+    "subTopic": "JavaScript Core & DOM",
+    "topic": "Event Delegation, Event Loop & Virtual DOM",
+    "difficulty": "Medium",
+    "question": "What is Event Delegation, and how does Virtual DOM differ from Real DOM?",
+    "answer": "Event Delegation:\nTechnique leveraging Event Bubbling where a single event listener is attached to a parent element rather than every child. When an event fires on a child, it bubbles up to the parent, where event.target is checked.\n\nVirtual DOM (React) vs Real DOM:\n- Real DOM: Browser's in-memory tree. Modifying nodes triggers layout reflow and repaint, which can be expensive.\n- Virtual DOM: Lightweight JS object tree representing UI state. React performs diffing algorithm (reconciliation) between new and old virtual trees, computing minimal batches to update in Real DOM.",
+    "keyTakeaways": [
+      "Event delegation reduces memory overhead when rendering large dynamic lists.",
+      "Virtual DOM minimizes expensive browser reflow and repaint operations."
+    ]
+  },
+  {
+    "questionNumber": 4,
+    "subject": "Frontend & Web Technologies",
+    "category": "Frontend & Web Technologies",
+    "subTopic": "Next.js Framework",
+    "topic": "SSR, SSG, ISR & App Router",
+    "difficulty": "Hard",
+    "question": "Compare Server-Side Rendering (SSR), Static Site Generation (SSG), and Incremental Static Regeneration (ISR) in Next.js.",
+    "answer": "1. Static Site Generation (SSG - getStaticProps):\n   HTML is pre-rendered at build time. Ultra-fast page loads via CDN. Ideal for blogs/documentation.\n\n2. Server-Side Rendering (SSR - getServerSideProps):\n   HTML is generated dynamically on every incoming request. Ideal for real-time user-specific dashboards.\n\n3. Incremental Static Regeneration (ISR - revalidate option):\n   Allows static pages to be updated in the background AFTER build time without rebuilding the whole site. Pages are regenerated on-demand after specified revalidate interval.",
+    "keyTakeaways": [
+      "SSG + ISR provides CDN speed with near real-time data freshness.",
+      "App Router uses Server Components by default for smaller JS client bundles."
+    ]
+  }
+]

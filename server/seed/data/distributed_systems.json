@@ -1,0 +1,72 @@
+[
+  {
+    "questionNumber": 1,
+    "subject": "Distributed Systems",
+    "category": "Distributed Systems",
+    "subTopic": "Architecture & Models",
+    "topic": "CAP Theorem & Partition Tolerance",
+    "difficulty": "Hard",
+    "question": "Explain the CAP Theorem and how distributed databases make trade-offs between Consistency, Availability, and Partition Tolerance.",
+    "answer": "The CAP Theorem (Brewer's Theorem) states that a distributed data store can simultaneously provide at most two out of three guarantees:\n\n1. Consistency (C): Every read receives the most recent write or an error.\n2. Availability (A): Every non-failing node returns a non-error response for every request.\n3. Partition Tolerance (P): The system continues operating despite network partitions (dropped/delayed messages between nodes).\n\nSince network partitions (P) are unavoidable in distributed systems, architects must choose between:\n- CP Systems (Consistency + Partition Tolerance): Sacrifice availability during network splits (e.g., HBase, ZooKeeper, Spanner).\n- AP Systems (Availability + Partition Tolerance): Sacrifice strong consistency, returning potentially stale data and using eventual consistency (e.g., Cassandra, DynamoDB).",
+    "keyTakeaways": [
+      "Network partitions (P) cannot be avoided in distributed physical networks.",
+      "CP prioritizes correctness; AP prioritizes zero-downtime uptime."
+    ]
+  },
+  {
+    "questionNumber": 2,
+    "subject": "Distributed Systems",
+    "category": "Distributed Systems",
+    "subTopic": "Communication & RPC",
+    "topic": "gRPC, Protobuf & Execution Semantics",
+    "difficulty": "Medium",
+    "question": "How does gRPC achieve high performance compared to REST/JSON, and what are execution semantics in RPC?",
+    "answer": "gRPC vs REST/JSON:\n1. Protocol: gRPC uses HTTP/2 (multiplexing streams, binary framing, header compression), whereas REST typically uses HTTP/1.1.\n2. Serialization: gRPC uses Protocol Buffers (Protobuf), a compact binary format, whereas REST uses verbose text-based JSON.\n3. Type Safety: Protobuf uses Interface Definition Language (IDL) to generate strongly typed stubs for client and server in multiple languages.\n\nRPC Execution Semantics:\n- At-Least-Once: Request is retried until acknowledged. May execute multiple times (requires idempotent handlers).\n- At-Most-Once: Duplicate request suppression using unique Request IDs. Executes 0 or 1 time.\n- Exactly-Once: Combination of idempotent logging, transaction logs, and deduplication (most expensive).",
+    "keyTakeaways": [
+      "Protobuf + HTTP/2 streaming provides significant bandwidth and latency savings.",
+      "Idempotency is critical for safe retries under At-Least-Once semantics."
+    ]
+  },
+  {
+    "questionNumber": 3,
+    "subject": "Distributed Systems",
+    "category": "Distributed Systems",
+    "subTopic": "Synchronization & Coordination",
+    "topic": "Logical Clocks & Vector Clocks",
+    "difficulty": "Hard",
+    "question": "Compare Lamport Logical Clocks and Vector Clocks in tracking event causality.",
+    "answer": "1. Lamport Clocks:\n   - Each node maintains a single scalar integer clock.\n   - Rule: Before an event, clock = clock + 1. On message receive, local_clock = max(local_clock, received_clock) + 1.\n   - Property: If Event A -> Event B, then L(A) < L(B). However, L(A) < L(B) does NOT imply A -> B (cannot detect concurrent events).\n\n2. Vector Clocks:\n   - Each node maintains a vector of size N (number of processes): V[1..N].\n   - Rule: Process i increments V[i] for local events. Attached vector sent with messages. Receiver takes element-wise max.\n   - Property: Can determine exact causal dependency vs. concurrency (V1 || V2) by comparing vector elements.",
+    "keyTakeaways": [
+      "Lamport clocks establish partial order but miss concurrency detection.",
+      "Vector clocks identify concurrent updates, critical for conflict detection in Dynamo/Riak."
+    ]
+  },
+  {
+    "questionNumber": 4,
+    "subject": "Distributed Systems",
+    "category": "Distributed Systems",
+    "subTopic": "Synchronization & Coordination",
+    "topic": "Consensus & Raft Protocol",
+    "difficulty": "Hard",
+    "question": "How does the Raft Consensus Algorithm achieve leader election and log replication?",
+    "answer": "Raft decomposes consensus into three subproblems:\n\n1. Leader Election:\n   - Nodes exist in Candidate, Follower, or Leader states.\n   - Randomized election timeouts prevent split-vote scenarios.\n   - A candidate requests votes; if it receives votes from a majority quorum, it becomes Leader.\n\n2. Log Replication:\n   - The Leader accepts client commands, appends them to its log, and sends AppendEntries RPCs to Followers.\n   - Once an entry is replicated on a majority of nodes, it is committed and applied to state machines.\n\n3. Safety:\n   - Leader Completeness: A candidate can only be elected if its log is at least as up-to-date as a majority quorum.",
+    "keyTakeaways": [
+      "Raft relies on majority quorums (N/2 + 1) for safety.",
+      "Used widely in etcd, Consul, and CockroachDB for cluster state agreement."
+    ]
+  },
+  {
+    "questionNumber": 5,
+    "subject": "Distributed Systems",
+    "category": "Distributed Systems",
+    "subTopic": "Consistency & Replication",
+    "topic": "Quorum-Based Consistency & CRDTs",
+    "difficulty": "Hard",
+    "question": "Explain Quorum Read/Write math (R + W > N) and Conflict-Free Replicated Data Types (CRDTs).",
+    "answer": "Quorum Consistency:\n- Given N replicas, write quorum W, and read quorum R.\n- If R + W > N, the read set and write set must overlap by at least one node containing the latest timestamped write, guaranteeing strong consistency.\n- Example: N=3, W=2, R=2 -> Strong Consistency (2 + 2 > 3).\n\nConflict-Free Replicated Data Types (CRDTs):\n- Data structures (Counters, Sets, Registers) designed so concurrent updates can be merged deterministically without locks or central coordination.\n- Mathematical Property: Operation merge function must be Commutative, Associative, and Idempotent (e.g., LPN-Set, PN-Counters in collaborative text editors).",
+    "keyTakeaways": [
+      "R + W > N prevents stale reads in Dynamo-style databases.",
+      "CRDTs enable eventual consistency without write locks."
+    ]
+  }
+]

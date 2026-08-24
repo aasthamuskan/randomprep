@@ -1,0 +1,67 @@
+[
+  {
+    "questionNumber": 1,
+    "subject": "Database & SQL",
+    "subTopic": "Database Design & Normalization",
+    "difficulty": "Medium",
+    "question": "What is Normalization? Compare 1NF, 2NF, 3NF, BCNF, and 4NF with examples of functional dependencies.",
+    "description": "Decomposition techniques to eliminate data redundancy and insertion/update/deletion anomalies.",
+    "codeSnippet": "-- 3NF vs BCNF FD Check:\n-- 3NF: For X -> Y, X must be a Superkey OR Y must be a Prime Attribute.\n-- BCNF: For X -> Y, X MUST be a Superkey (stricter than 3NF).\n\n-- Example Student-Department Schema in 3NF:\nCREATE TABLE Department (\n    dept_id INT PRIMARY KEY,\n    dept_name VARCHAR(100)\n);\nCREATE TABLE Student (\n    student_id INT PRIMARY KEY,\n    student_name VARCHAR(100),\n    dept_id INT FOREIGN KEY REFERENCES Department(dept_id)\n);",
+    "idealAnswer": "**Normalization** organizes tables to eliminate data redundancy and update/insertion/deletion anomalies.\n\n- **1NF**: Ensures atomic values (no multivalued or composite attributes).\n- **2NF**: In 1NF and eliminates partial dependencies (non-key attribute depends on a part of composite key).\n- **3NF**: In 2NF and eliminates transitive dependencies (non-key attribute depends on another non-key attribute).\n- **BCNF**: Stricter 3NF where for *every* functional dependency $X \\to Y$, $X$ must be a superkey.\n- **4NF**: Eliminates Multivalued Dependencies ($X \\twoheadrightarrow Y$) by decomposing independent many-to-many relationships into separate tables.",
+    "expectedConcepts": ["Normalization", "1NF/2NF/3NF", "BCNF", "4NF Multivalued Dependency", "Functional Dependency"],
+    "hints": ["BCNF requires every determinant to be a candidate key."],
+    "references": []
+  },
+  {
+    "questionNumber": 2,
+    "subject": "Database & SQL",
+    "subTopic": "Transactions, Concurrency & ACID",
+    "difficulty": "Hard",
+    "question": "What are ACID properties? Compare Two-Phase Locking (2PL), MVCC, and Isolation Levels.",
+    "description": "Transaction management, concurrency protocols, and read/write anomaly prevention.",
+    "codeSnippet": "-- Transaction Isolation Levels in SQL:\nSET TRANSACTION ISOLATION LEVEL REPEATABLE READ;\nBEGIN TRANSACTION;\n  SELECT * FROM Accounts WHERE id = 101;\n  -- Prevents Dirty Reads & Non-Repeatable Reads, but Phantom Reads can occur.\nCOMMIT;",
+    "idealAnswer": "- **ACID**: Atomicity (all or nothing via WAL), Consistency (integrity constraints), Isolation (concurrency control), Durability (persisted via log flushing).\n- **Concurrency Control**:\n  - **Strict 2PL**: Holds exclusive write locks until transaction commit/abort, guaranteeing serializability and preventing cascading rollbacks.\n  - **MVCC (Multiversion Concurrency Control)**: Maintains timestamped data versions. Readers see a snapshot without locking writers, eliminating read-write blocking.\n- **Isolation Levels**: Read Uncommitted $\\to$ Read Committed $\\to$ Repeatable Read $\\to$ Serializable.",
+    "expectedConcepts": ["ACID Properties", "Strict 2PL", "MVCC", "Isolation Levels", "Write-Ahead Logging (WAL)"],
+    "hints": ["MVCC allows non-blocking reads by maintaining snapshot versions."],
+    "references": []
+  },
+  {
+    "questionNumber": 3,
+    "subject": "Database & SQL",
+    "subTopic": "Storage & Indexing",
+    "difficulty": "Medium",
+    "question": "Compare Clustered vs Non-Clustered Indexes, B+ Trees vs B-Trees, and Covering Indexes.",
+    "description": "Disk storage organization, tree indexing structures, and query execution optimization.",
+    "codeSnippet": "-- Covering Index Example:\nCREATE INDEX idx_emp_dept_salary ON Employee(dept_id, salary, emp_name);\n-- Query executes via Index-Only Scan (no base table lookup needed):\nSELECT emp_name, salary FROM Employee WHERE dept_id = 5;",
+    "idealAnswer": "- **Clustered vs Non-Clustered Index**: Clustered index physically sorts data rows on disk (only 1 per table); Non-Clustered index maintains a separate structure storing pointers (Row IDs / Primary Keys) to table data.\n- **B+ Tree vs B-Tree**: B+ Trees store data pointers only at leaf nodes, which are linked sequentially. This increases node fan-out, minimizes disk I/O depth, and makes range queries extremely fast.\n- **Covering Index**: Contains all columns requested by a query in the index itself, enabling fast **Index-Only Scans** without touching table pages.",
+    "expectedConcepts": ["Clustered Index", "Non-Clustered Index", "B+ Tree Fan-out", "Covering Index", "Index-Only Scan"],
+    "hints": ["Clustered index defines physical data layout on disk."],
+    "references": []
+  },
+  {
+    "questionNumber": 4,
+    "subject": "Database & SQL",
+    "subTopic": "Data Definition & Control (DDL/DCL/TCL)",
+    "difficulty": "Easy",
+    "question": "What is the difference between DELETE, TRUNCATE, and DROP in SQL?",
+    "description": "SQL command categories, transaction logging, and structural schema modifications.",
+    "codeSnippet": "-- DELETE (DML): Logged per row, supports WHERE clause, can be rolled back\nDELETE FROM Employee WHERE dept_id = 10;\n\n-- TRUNCATE (DDL): Resets identity, removes all rows rapidly, minimal logging\nTRUNCATE TABLE Employee;\n\n-- DROP (DDL): Removes data AND table schema structure completely\nDROP TABLE Employee;",
+    "idealAnswer": "- **DELETE (DML)**: Removes specific rows matching a `WHERE` clause. Records individual row deletions in transaction logs and can be rolled back.\n- **TRUNCATE (DDL)**: Removes all rows from a table by deallocating data pages. Faster than `DELETE`, resets auto-increment identities, but cannot filter rows with `WHERE`.\n- **DROP (DDL)**: Deletes the entire table structure, indexes, constraints, and data permanently from the database schema.",
+    "expectedConcepts": ["DELETE vs TRUNCATE vs DROP", "DML vs DDL", "Transaction Logging", "Identity Reset"],
+    "hints": ["TRUNCATE deallocates data pages directly without individual row logs."],
+    "references": []
+  },
+  {
+    "questionNumber": 5,
+    "subject": "Database & SQL",
+    "subTopic": "Advanced SQL & Optimization",
+    "difficulty": "Hard",
+    "question": "How do Window Functions, CTEs, and Query Execution Plans optimize complex SQL queries?",
+    "description": "Analytical SQL operations, recursive query processing, and index performance tuning.",
+    "codeSnippet": "-- Find 2nd Highest Salary per Department using Window Function DENSE_RANK():\nWITH RankedSalaries AS (\n    SELECT emp_name, dept_id, salary,\n           DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) as rank\n    FROM Employee\n)\nSELECT emp_name, dept_id, salary\nFROM RankedSalaries\nWHERE rank = 2;",
+    "idealAnswer": "- **Window Functions (`RANK()`, `DENSE_RANK()`, `ROW_NUMBER()`, `SUM() OVER`)**: Perform calculations across set of rows related to current row without collapsing the result set into a single row.\n- **Common Table Expressions (CTEs)**: Temporary result sets defined using `WITH` clause that improve readability and enable **Recursive Queries** for hierarchical tree structures.\n- **Execution Plans & Optimization**: Analyze `EXPLAIN` output to identify full table scans, missing indexes, costly hash joins, and optimize predicates to reduce disk I/O.",
+    "expectedConcepts": ["Window Functions", "Recursive CTE", "DENSE_RANK vs RANK", "Query Execution Plan", "SQL Optimization"],
+    "hints": ["DENSE_RANK leaves no gaps in ranking when values tie."],
+    "references": []
+  }
+]

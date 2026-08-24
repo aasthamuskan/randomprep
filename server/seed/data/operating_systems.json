@@ -1,0 +1,54 @@
+[
+  {
+    "questionNumber": 1,
+    "subject": "Operating Systems",
+    "subTopic": "Process Management & Scheduling",
+    "difficulty": "Medium",
+    "question": "What is Context Switching? Compare Preemptive vs Non-Preemptive Scheduling Algorithms and explain Priority Inversion.",
+    "description": "Kernel context switches, CPU scheduling policies, and priority inheritance.",
+    "codeSnippet": "// Context Switch steps in OS Kernel:\n// 1. Save Registers, PC, SP of active process into its PCB (Process Control Block)\n// 2. Move active process to Ready/Blocked queue\n// 3. Load PCB of next scheduled process, restore PC, SP, registers\n// 4. Flush TLB & CPU cache if switching to a different process address space",
+    "idealAnswer": "- **Context Switch**: The kernel saves CPU state (registers, PC, SP) of running process into its PCB and restores another process's state. It incurs overhead due to pipeline/TLB flushes and cache misses.\n- **Preemptive vs Non-Preemptive**: Preemptive (Round Robin, Shortest Remaining Time First) interrupts running tasks for higher priority jobs; Non-Preemptive (FCFS, SJF) allows jobs to run to completion.\n- **Priority Inversion**: Low-priority task holds a resource needed by high-priority task, while medium-priority task preempts low-priority task. Solved via **Priority Inheritance Protocol (PIP)**.",
+    "expectedConcepts": ["Context Switching", "PCB", "Preemptive vs Non-Preemptive", "Priority Inversion", "Priority Inheritance"],
+    "hints": ["Priority inheritance temporarily elevates low-priority process priority to avoid starvation."],
+    "references": []
+  },
+  {
+    "questionNumber": 2,
+    "subject": "Operating Systems",
+    "subTopic": "Memory Management & Virtual Memory",
+    "difficulty": "Hard",
+    "question": "What is Demand Paging? Explain Belady's Anomaly, TLB, Page Fault handling, and Copy-on-Write (COW).",
+    "description": "Virtual memory address translation, page replacement algorithms, and memory protection.",
+    "codeSnippet": "// Copy-On-Write (COW) during fork():\n// Parent and Child initially share physical memory pages marked READ-ONLY.\n// When child attempts write -> Page Fault Trap -> OS allocates new physical frame -> Copies page.",
+    "idealAnswer": "- **Demand Paging**: Loads virtual pages into physical memory frames only when accessed via page faults.\n- **Belady's Anomaly**: Paradox where increasing frame allocation in FIFO page replacement *increases* page faults. Stack algorithms like LRU and Optimal are immune.\n- **TLB (Translation Lookaside Buffer)**: High-speed hardware cache for virtual-to-physical address mappings.\n- **Copy-on-Write (COW)**: Speeds up `fork()` by allowing parent and child processes to share physical pages until one writes to a page, triggering a private frame allocation.",
+    "expectedConcepts": ["Demand Paging", "Belady's Anomaly", "TLB Hit/Miss", "Copy-on-Write (COW)", "Page Fault Trap"],
+    "hints": ["Belady's anomaly occurs in FIFO because it evicts pages based solely on load time."],
+    "references": []
+  },
+  {
+    "questionNumber": 3,
+    "subject": "Operating Systems",
+    "subTopic": "Synchronization & Concurrency",
+    "difficulty": "Medium",
+    "question": "Compare Mutex, Semaphore, and Monitors. How do condition variables solve the Producer-Consumer problem?",
+    "description": "Process synchronization, critical sections, and avoiding race conditions.",
+    "codeSnippet": "// Producer-Consumer with Mutex & Condition Variables:\nmutex_lock(&lock);\nwhile (count == BUFFER_SIZE) {\n    pthread_cond_wait(&not_full, &lock); // Release lock and wait\n}\nbuffer[in] = item; count++;\npthread_cond_signal(&not_empty);\nmutex_unlock(&lock);",
+    "idealAnswer": "- **Mutex**: Locking mechanism providing mutual exclusion (only owner can unlock).\n- **Semaphore**: Signaling variable (Counting / Binary) tracking available resources (`wait()` / `signal()`).\n- **Monitor**: High-level language construct bundling shared data and synchronization. At most 1 thread executes inside a monitor.\n- **Condition Variables**: Allow threads to suspend execution (`wait()`) until a specific state predicate is met, eliminating CPU-wasting **Busy Waiting** in while loops.",
+    "expectedConcepts": ["Mutex", "Semaphore", "Monitors", "Condition Variables", "Spurious Wakeup"],
+    "hints": ["Always check condition variables inside a while loop to handle spurious wakeups."],
+    "references": []
+  },
+  {
+    "questionNumber": 4,
+    "subject": "Operating Systems",
+    "subTopic": "File & I/O Management",
+    "difficulty": "Medium",
+    "question": "How do Journaling File Systems, Direct Memory Access (DMA), and Disk Scheduling Algorithms work?",
+    "description": "File system reliability, I/O hardware offloading, and disk head optimization.",
+    "codeSnippet": "// Direct Memory Access (DMA):\n// CPU writes source, destination address, and byte count to DMA Controller.\n// DMA Controller handles byte-by-byte bus transfers directly to RAM.\n// On completion, DMA fires a hardware interrupt to CPU.",
+    "idealAnswer": "- **Journaling File System (ext4, NTFS)**: Logs file metadata/data changes to a dedicated journal before writing to disk, ensuring instant crash recovery without full `fsck` scans.\n- **DMA (Direct Memory Access)**: Offloads high-speed block transfers between I/O devices and RAM directly, freeing CPU from byte-by-byte polling.\n- **Disk Scheduling**: SCAN/LOOK (elevator algorithm) and SSTF (Shortest Seek Time First) optimize disk head movement to minimize seek latency.",
+    "expectedConcepts": ["Journaling File System", "DMA Controller", "SCAN/LOOK Algorithm", "Buffer Cache"],
+    "hints": ["DMA allows hardware devices to transfer data to RAM without CPU intervention."],
+    "references": []
+  }
+]
