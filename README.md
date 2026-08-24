@@ -134,9 +134,56 @@ npm run dev
 
 ---
 
+## 🌐 Deployment Guide (Step-by-Step)
+
+### Overview
+RandomPrep consists of a **Node.js/Express Backend** and a **React/Vite Frontend**.
+- **Backend Deployment**: Render / Railway (Free & Simple)
+- **Frontend Deployment**: Vercel / Netlify (Free & Fast)
+
+---
+
+### Step 1: Deploy Backend (Express API) to Render
+
+1. **Sign Up / Log In**: Go to [render.com](https://render.com) and connect your GitHub account.
+2. **Create New Web Service**:
+   - Click **New +** -> Select **Web Service**.
+   - Connect repository `aasthamuskan/randomprep`.
+3. **Configure Service Settings**:
+   - **Name**: `randomprep-backend`
+   - **Root Directory**: `server`
+   - **Environment**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `node index.js`
+4. **Environment Variables**:
+   - Add `PORT` = `5000` (or leave default assigned by Render).
+   - *(Optional)* Add `MONGO_URI` if connecting to MongoDB Atlas.
+5. **Deploy**: Click **Create Web Service**.
+   - Copy your deployed backend URL: `https://randomprep-backend.onrender.com`
+
+---
+
+### Step 2: Deploy Frontend (React/Vite) to Vercel
+
+1. **Sign Up / Log In**: Go to [vercel.com](https://vercel.com) and log in with GitHub.
+2. **Add New Project**:
+   - Click **Add New...** -> **Project**.
+   - Import `aasthamuskan/randomprep`.
+3. **Configure Project Settings**:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: Click *Edit* -> Select `client`.
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. **Environment Variables**:
+   - Add `VITE_API_URL` = `https://randomprep-backend.onrender.com/api` (your deployed Render backend URL).
+5. **Deploy**: Click **Deploy**. Vercel will build and provide a live URL (e.g., `https://randomprep.vercel.app`).
+
+---
+
 ## 🤝 Contributing & License
 
 Contributions, issues, and feature requests are welcome!
-Fell free to check the [GitHub Repository](https://github.com/aasthamuskan/randomprep).
+Feel free to check the [GitHub Repository](https://github.com/aasthamuskan/randomprep).
 
 Designed with ❤️ for tech interview success.
+
