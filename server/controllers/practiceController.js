@@ -1,7 +1,12 @@
 const Groq = require('groq-sdk');
 const store = require('../config/store');
 
-const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const getCleanGroqKey = () => {
+  const raw = (process.env.GROQ_API_KEY || '').trim();
+  return raw.split(/\s+/)[0];
+};
+
+const client = new Groq({ apiKey: getCleanGroqKey() });
 
 // ── AI Evaluation ──────────────────────────────────────────────────────────
 

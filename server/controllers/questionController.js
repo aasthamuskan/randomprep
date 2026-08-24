@@ -1,9 +1,11 @@
 const fs = require('fs');
 const path = require('path');
-const Groq = require('groq-sdk');
-const Question = require('../models/Question');
+const getCleanGroqKey = () => {
+  const raw = (process.env.GROQ_API_KEY || '').trim();
+  return raw.split(/\s+/)[0];
+};
 
-const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const client = new Groq({ apiKey: getCleanGroqKey() });
 
 const VALID_DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 
