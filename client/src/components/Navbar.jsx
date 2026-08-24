@@ -88,16 +88,16 @@ function NavItem({ to, label }) {
 
 // Streak indicator
 function StreakChip() {
-  const [streak, setStreak] = useState(1);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     getStats()
-      ? getStats().then(data => {
-          if (data?.stats?.streak !== undefined) {
-            setStreak(data.stats.streak || 1);
-          }
-        }).catch(() => {})
-      : null;
+      .then((data) => {
+        if (data?.stats?.streak !== undefined) {
+          setStreak(data.stats.streak);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   return (

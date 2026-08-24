@@ -137,11 +137,43 @@ const getStats = async (req, res, next) => {
       ? Math.round(all.reduce((sum, s) => sum + (s.score || 0), 0) / total)
       : 0;
 
-    // Calculate streak from practice timestamps
+    // ── Professional Consecutive Daily Streak Algorithm ────────────────────
     const uniqueDays = new Set(
-      all.map(s => new Date(s.createdAt).toISOString().split('T')[0])
+      all.map((s) => {
+        const d = new Date(s.createdAt);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      })
     );
-    let streak = uniqueDays.size;
+
+    const getFormattedDate = (dateObj) => {
+      return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+    };
+
+    const now = new Date();
+    const todayStr = getFormattedDate(now);
+
+    const yesterdayObj = new Date(now);
+    yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+    const yesterdayStr = getFormattedDate(yesterdayObj);
+
+    let streak = 0;
+
+    // Determine starting anchor date for consecutive check
+    let checkDate = null;
+    if (uniqueDays.has(todayStr)) {
+      checkDate = new Date(now);
+    } else if (uniqueDays.has(yesterdayStr)) {
+      checkDate = yesterdayObj;
+    }
+
+    // Count consecutive days backward
+    if (checkDate) {
+      const iter = new Date(checkDate);
+      while (uniqueDays.has(getFormattedDate(iter))) {
+        streak += 1;
+        iter.setDate(iter.getDate() - 1);
+      }
+    }
 
     // Group by category
     const catMap = {};
