@@ -258,12 +258,13 @@ const getCategories = async (req, res, next) => {
 // ── 5. Get Random Question ───────────────────────────────────────────────────
 const getRandomQuestion = async (req, res, next) => {
   try {
-    const { subject, category, subTopic, difficulty } = req.query;
+    const { subject, category, subTopic, difficulty, excludeId } = req.query;
     const selectedSubject = subject || category;
 
     const allQuestions = loadLocalQuestions();
 
     let filtered = allQuestions.filter((q) => {
+      if (excludeId && (q._id === excludeId || q.id === excludeId)) return false;
       if (selectedSubject && selectedSubject !== 'All') {
         const matchSubj = (q.subject || '').toLowerCase() === selectedSubject.toLowerCase();
         const matchCat = (q.category || '').toLowerCase() === selectedSubject.toLowerCase();
@@ -278,6 +279,24 @@ const getRandomQuestion = async (req, res, next) => {
       return true;
     });
 
+    // If excludeId left 0 items, fallback to full filtered list
+    if (filtered.length === 0 && excludeId) {
+      filtered = allQuestions.filter((q) => {
+        if (selectedSubject && selectedSubject !== 'All') {
+          const matchSubj = (q.subject || '').toLowerCase() === selectedSubject.toLowerCase();
+          const matchCat = (q.category || '').toLowerCase() === selectedSubject.toLowerCase();
+          if (!matchSubj && !matchCat) return false;
+        }
+        if (subTopic && subTopic !== 'All') {
+          if ((q.subTopic || '').toLowerCase() !== subTopic.toLowerCase()) return false;
+        }
+        if (difficulty && difficulty !== 'Mixed' && VALID_DIFFICULTIES.includes(difficulty)) {
+          if (q.difficulty !== difficulty) return false;
+        }
+        return true;
+      });
+    }
+
     if (filtered.length > 0) {
       const randomDbQuestion = filtered[Math.floor(Math.random() * filtered.length)];
       return res.json({ success: true, question: randomDbQuestion, source: 'database' });
@@ -286,26 +305,31 @@ const getRandomQuestion = async (req, res, next) => {
     // AI Fallback
     const cat = selectedSubject && selectedSubject !== 'All' ? selectedSubject : 'C Language';
     const diff = difficulty && difficulty !== 'Mixed' ? difficulty : 'Medium';
+    const randomEntropy = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-    const prompt = `You are a senior software engineer conducting a verbal technical interview.
+    const prompt = `You are a principal software engineer conducting a verbal technical interview.
 
-Generate ONE ${diff} difficulty THEORY-BASED interview question about "${cat}".
+Target Category/Domain: "${cat}"
+Target Subtopic: "${subTopic || 'General'}"
+Difficulty Level: "${diff}"
+Random Seed Token: "${randomEntropy}"
 
 RULES:
-- The question must be a CONCEPTUAL/THEORY question — asked verbally, not a coding challenge.
-- Do NOT ask the candidate to write code, implement an algorithm, or solve a LeetCode-style problem.
-- Ask about definitions, differences, how things work, why something exists, trade-offs, or real-world use.
+- Generate ONE ${diff} difficulty THEORY or SCENARIO-BASED interview question about "${cat}".
+- Ensure the question is FRESH, UNIQUE, DIFFERENT, and DISTINCT from standard cliché questions. Pick a specific real-world angle, trade-off, architectural pattern, edge case, or practical dilemma.
+- The question must be a CONCEPTUAL/THEORY question asked orally — NOT a coding task, implementation challenge, or LeetCode problem.
+- Ask about definitions, differences, internal mechanics, why something exists, trade-offs, or production scenarios.
 
 Respond ONLY with a valid JSON object — no markdown, no preamble, no extra text:
 {
-  "question": "The theory interview question text here",
+  "question": "The unique theory or scenario interview question text here",
   "subject": "${cat}",
   "category": "${cat}",
-  "subTopic": "General",
+  "subTopic": "${subTopic || 'General'}",
   "difficulty": "${diff}",
   "expectedConcepts": ["concept1", "concept2", "concept3", "concept4"],
   "hints": ["One short hint that nudges the candidate toward key concepts"],
-  "idealAnswer": "A clear model answer covering all the key concepts an interviewer expects"
+  "idealAnswer": "A clear model answer covering all key concepts an interviewer expects"
 }`;
 
     const GROQ_MODELS = [
@@ -321,7 +345,7 @@ Respond ONLY with a valid JSON object — no markdown, no preamble, no extra tex
         const completion = await client.chat.completions.create({
           model,
           messages: [{ role: 'user', content: prompt }],
-          temperature: 0.8,
+          temperature: 0.95,
           max_tokens: 800,
         });
         raw = completion.choices[0]?.message?.content?.trim() || '';
@@ -344,18 +368,28 @@ Respond ONLY with a valid JSON object — no markdown, no preamble, no extra tex
       }
     }
 
-    // Dynamic Fallback Question if AI fails or no key
+    // Diverse Dynamic Fallback Pool if AI fails or no key
+    const fallbackTemplates = [
+      `Describe a real-world production incident involving ${cat}. How did you diagnose the root cause, handle trade-offs, and implement a long-term resolution?`,
+      `Compare two contrasting architectural approaches or core mechanisms in ${cat}. When would you choose one over the other in enterprise engineering?`,
+      `Explain how memory management, state synchronization, or failure isolation works in ${cat} under high concurrency.`,
+      `What are the most common performance bottlenecks or anti-patterns in ${cat}, and how do senior engineers identify and mitigate them?`,
+      `Walk through how you design for high availability and zero-downtime fault tolerance when working with ${cat} systems.`
+    ];
+
+    const chosenTemplate = fallbackTemplates[Math.floor(Math.random() * fallbackTemplates.length)];
+
     const fallbackQuestion = {
-      _id: `fallback_${Date.now()}`,
-      questionNumber: 1,
+      _id: `fallback_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      questionNumber: Math.floor(Math.random() * 100) + 1,
       subject: cat,
       category: cat,
-      subTopic: 'General',
+      subTopic: subTopic || 'General',
       difficulty: diff,
-      question: `Explain a real-world scenario involving ${cat} where you identified a key challenge, applied best practices, and delivered an optimal solution.`,
-      expectedConcepts: ['problem identification', 'trade-offs', 'implementation details', 'impact'],
-      hints: ['Structure your response clearly using Situation, Action, and Results.'],
-      idealAnswer: `A comprehensive answer describing the core principles of ${cat}, the architectural/process trade-offs considered, and the measurable results delivered.`,
+      question: chosenTemplate,
+      expectedConcepts: ['architectural trade-offs', 'root cause analysis', 'implementation details', 'system impact'],
+      hints: ['Use the STAR framework (Situation, Task, Action, Result) to structure your verbal response.'],
+      idealAnswer: `A thorough response explaining the core principles of ${cat}, evaluating technical trade-offs, and demonstrating production-level problem solving.`,
     };
 
     return res.json({ success: true, question: fallbackQuestion, source: 'fallback' });

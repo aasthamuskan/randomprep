@@ -152,13 +152,18 @@ export default function Home() {
   const fetchQuestion = useCallback(async () => {
     setLoading(true); setError(''); setQuestion(null);
     try {
-      const params = { category: currentFocus, difficulty: difficulty === 'Mixed' ? undefined : difficulty };
+      const params = {
+        category: currentFocus,
+        subTopic: currentFocus,
+        difficulty: difficulty === 'Mixed' ? undefined : difficulty,
+        excludeId: question?._id || question?.id,
+      };
       const data = await getRandomQuestion(params);
       setQuestion(data.question);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load. Is the server running?');
     } finally { setLoading(false); }
-  }, [type, currentFocus, difficulty]);
+  }, [type, currentFocus, difficulty, question]);
 
   const handleStart = () => {
     if (!question) return;
