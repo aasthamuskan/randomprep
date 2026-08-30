@@ -11,6 +11,8 @@ RandomPrep is a futuristic, interactive, subject-wise technical preparation plat
 - [📚 Supported Technical Subjects (14 Core Subjects)](#-supported-technical-subjects-14-core-subjects)
 - [🏗️ System Architecture & Tech Stack](#%EF%B8%8F-system-architecture--tech-stack)
 - [🚀 Quick Start & Installation Guide](#-quick-start--installation-guide)
+- [🐳 Docker & DevOps](#-docker--devops)
+- [⚙️ CI/CD Pipeline](#%EF%B8%8F-cicd-pipeline)
 - [📡 API Documentation](#-api-documentation)
 - [🤝 Contributing & License](#-contributing--license)
 
@@ -131,6 +133,144 @@ npm run dev
 ### Practice Sessions
 - `POST /api/practice/submit` - Submits an answer for evaluation and saves history.
 - `GET /api/practice/history` - Retrieves user practice session history.
+
+---
+
+## 🐳 Docker & DevOps
+
+RandomPrep is fully containerized using Docker with a multi-stage build strategy for optimized production images.
+
+### Project Structure (DevOps Files)
+```
+randomprep/
+├── docker-compose.yml          # Production — backend + frontend orchestration
+├── docker-compose.dev.yml      # Development — with hot reload (nodemon + Vite HMR)
+├── ecosystem.config.js         # PM2 process manager config (cluster mode)
+├── Makefile                    # Shortcut commands
+├── server/
+│   ├── Dockerfile              # Multi-stage: deps → non-root runner (node:20-alpine)
+│   ├── Dockerfile.dev          # Dev image with nodemon
+│   └── .env.example            # Environment variable template
+└── client/
+    ├── Dockerfile              # Multi-stage: Vite build → Nginx serve
+    ├── Dockerfile.dev          # Dev image with Vite HMR
+    └── nginx.conf              # SPA routing + API proxy + static caching
+```
+
+### Quick Commands
+```bash
+# Copy env template and fill in your GROQ_API_KEY
+cp server/.env.example server/.env
+
+# Start full production stack (Docker)
+make prod
+# OR: docker-compose up --build -d
+
+# Start development stack with hot reload
+make dev-docker
+# OR: docker-compose -f docker-compose.dev.yml up --build
+
+# View logs
+make logs
+
+# Stop all containers
+make stop
+
+# Full cleanup (containers + volumes + images)
+make clean
+```
+
+### Docker Architecture
+```
+                ┌─────────────────────────────────────┐
+                │         docker-compose.yml           │
+                │                                     │
+                │  ┌─────────────┐  ┌───────────────┐ │
+  :80  ──────── │  │  frontend   │  │   backend     │ │ ──── :5000
+                │  │  (nginx)    │  │  (node:20)    │ │
+                │  │             │  │               │ │
+                │  │ /api/* ──── │──│ Express API   │ │
+                │  └─────────────┘  └───────┬───────┘ │
+                │                           │         │
+                │              ┌────────────┴──────┐  │
+                │              │  history_data vol  │  │
+                │              │  (JSON file store) │  │
+                │              └───────────────────┘  │
+                └─────────────────────────────────────┘
+```
+
+### Key DevOps Design Decisions
+
+| Decision | Rationale |
+| :--- | :--- |
+| **Multi-stage Docker builds** | Separate `deps` + `runner` stages — smaller final image, no devDependencies in prod |
+| **Non-root user** in backend | Security best practice — process runs as `appuser`, not root |
+| **Named Docker volume** (`history_data`) | Practice history JSON persists across container restarts |
+| **`depends_on` with `healthcheck`** | Frontend starts only after backend passes health check |
+| **Nginx for frontend** | Static file serving + SPA routing + API reverse proxy in one container |
+| **Layer caching** (`COPY package.json` first) | `npm install` layer cached — rebuilds only when dependencies change |
+
+---
+
+## ⚙️ CI/CD Pipeline
+
+GitHub Actions workflows are configured for automated CI and CD.
+
+### Workflow Overview
+```
+Developer pushes code
+         │
+         ▼
+   ┌──────────────────────────────────────────┐
+   │       ci.yml (on: push / pull_request)   │
+   │                                          │
+   │  ┌──────────────┐  ┌──────────────────┐  │
+   │  │ lint-frontend│  │docker-build-back │  │
+   │  │  (oxlint)    │  │ (validates build)│  │
+   │  └──────────────┘  └────────┬─────────┘  │
+   │                             │             │
+   │                   ┌─────────▼──────────┐  │
+   │                   │  api-smoke-test    │  │
+   │                   │ /api/health → 200? │  │
+   │                   └────────────────────┘  │
+   └──────────────────────────────────────────┘
+         │ (on: push to main only)
+         ▼
+   ┌──────────────────────────────────────────┐
+   │       cd.yml (on: push to main)          │
+   │                                          │
+   │  Push backend image → ghcr.io            │
+   │  Push frontend image → ghcr.io           │
+   │  Trigger Render deploy webhook           │
+   └──────────────────────────────────────────┘
+```
+
+### Setting Up CD (One-Time)
+1. Go to GitHub repo → **Settings → Secrets and variables → Actions**
+2. Add secret: `RENDER_DEPLOY_HOOK_URL` → paste your Render deploy hook URL
+3. Find Render hook: Render Dashboard → Service → **Settings → Deploy Hook**
+
+### PM2 (Production Process Manager)
+```bash
+# Install PM2 globally
+npm install -g pm2
+
+# Start with cluster mode (uses all CPU cores)
+pm2 start ecosystem.config.js --env production
+
+# View process status
+pm2 status
+
+# View logs
+pm2 logs randomprep-api
+
+# Zero-downtime reload
+pm2 reload randomprep-api
+
+# Auto-start on server reboot
+pm2 startup
+pm2 save
+```
 
 ---
 

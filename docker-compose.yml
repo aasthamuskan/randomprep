@@ -1,0 +1,52 @@
+﻿version: '3.9'
+
+services:
+  # ── Backend (Node.js / Express) ─────────────────────────────────────────────
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: randomprep-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      GROQ_API_KEY: 
+    volumes:
+      # Persist JSON history file across container restarts
+      - history_data:/app/data
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - randomprep-net
+
+  # ── Frontend (React + Nginx) ─────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: randomprep-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - randomprep-net
+
+# ── Volumes ───────────────────────────────────────────────────────────────────
+volumes:
+  history_data:
+    driver: local
+
+# ── Network ───────────────────────────────────────────────────────────────────
+networks:
+  randomprep-net:
+    driver: bridge

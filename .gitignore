@@ -4,5 +4,15 @@ dist/
 build/
 .env
 .env.local
+.env.*.local
 *.log
 .DS_Store
+
+# Docker
+.dockerignore
+
+# Data store (practice history — machine-local)
+server/data/
+
+# Build artifacts
+client/dist/

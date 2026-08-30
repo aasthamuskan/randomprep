@@ -1,0 +1,48 @@
+﻿# docker-compose.dev.yml — Local Development with Hot Reload
+# Usage: docker-compose -f docker-compose.dev.yml up --build
+
+version: '3.9'
+
+services:
+  # Backend with nodemon hot reload
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: randomprep-backend-dev
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server:/app          # Mount source for hot reload
+      - /app/node_modules      # Keep container node_modules isolated
+    ports:
+      - "5000:5000"
+    networks:
+      - randomprep-dev-net
+
+  # Frontend Vite dev server with hot reload
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: randomprep-frontend-dev
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:5000
+    volumes:
+      - ./client:/app          # Mount source for hot reload
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - randomprep-dev-net
+
+networks:
+  randomprep-dev-net:
+    driver: bridge

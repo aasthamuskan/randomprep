@@ -1,0 +1,117 @@
+﻿name: CI — Lint & Docker Build Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Job 1: Lint Frontend
+  lint-frontend:
+    name: Lint Frontend (oxlint)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run oxlint
+        run: npm run lint
+
+  # Job 2: Docker Build - Backend
+  docker-build-backend:
+    name: Docker Build — Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend Docker image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          push: false
+          tags: randomprep-backend:ci-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Job 3: Docker Build - Frontend
+  docker-build-frontend:
+    name: Docker Build — Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build frontend Docker image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./client
+          file: ./client/Dockerfile
+          push: false
+          tags: randomprep-frontend:ci-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Job 4: Backend API Smoke Test
+  api-smoke-test:
+    name: Backend API Smoke Test
+    runs-on: ubuntu-latest
+    needs: [docker-build-backend]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci --omit=dev
+
+      - name: Start server and run health check
+        working-directory: server
+        env:
+          NODE_ENV: test
+          PORT: 5000
+          GROQ_API_KEY: dummy-key-ci
+        run: |
+          node index.js &
+          SERVER_PID=$!
+          sleep 5
+          python3 -c "
+          import urllib.request, sys
+          try:
+              res = urllib.request.urlopen('http://localhost:5000/api/health')
+              code = res.getcode()
+              print(f'Health check status: {code}')
+              sys.exit(0 if code == 200 else 1)
+          except Exception as e:
+              print(f'Health check FAILED: {e}')
+              sys.exit(1)
+          "
+          kill $SERVER_PID
