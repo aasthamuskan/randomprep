@@ -29,7 +29,7 @@ function ScoreRing({ score }) {
 
 export default function EvaluationResult({ result, question, onPracticeAgain }) {
   if (!result) return null;
-  const { score, feedback, strengths, improvements, matchedConcepts, totalConcepts, timeTaken, idealAnswer } = result;
+  const { score, feedback, strengths, improvements, matchedConcepts, totalConcepts, timeTaken, idealAnswer, scoredBy } = result;
 
   const formatTime = (s) => {
     if (!s && s !== 0) return '0s';
@@ -43,6 +43,19 @@ export default function EvaluationResult({ result, question, onPracticeAgain }) 
       {/* Header */}
       <div className="border-b border-line pb-5">
         <div className="label mb-2">Interview Complete</div>
+        {scoredBy === 'keyword-match' && (
+          <div
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-2 rounded-full text-xs font-medium border"
+            style={{ background: 'rgba(245,158,11,0.08)', borderColor: 'rgba(245,158,11,0.25)', color: '#F59E0B' }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            Estimated score — AI evaluator was unavailable
+          </div>
+        )}
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">

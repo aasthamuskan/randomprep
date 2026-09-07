@@ -1,4 +1,4 @@
-const Groq = require('groq-sdk');
+﻿const Groq = require('groq-sdk');
 const store = require('../config/store');
 
 const getCleanGroqKey = () => {
@@ -80,6 +80,7 @@ const savePractice = async (req, res, next) => {
         feedback: score >= 70 ? 'Good answer covering key concepts.' : 'Review the expected concepts and expand your answer.',
         strengths: matched.length > 0 ? `Covered: ${matched.join(', ')}` : 'Attempted the question',
         improvements: 'Consider covering more technical depth',
+        isFallback: true,  // AI unavailable -- keyword-match scoring used
       };
     }
 
@@ -112,6 +113,7 @@ const savePractice = async (req, res, next) => {
         timeTaken,
         idealAnswer: idealAnswer || '',
         createdAt: session.createdAt,
+        scoredBy: evaluation.isFallback ? 'keyword-match' : 'ai',  // Scoring method transparency
       },
     });
   } catch (error) { next(error); }
@@ -206,35 +208,73 @@ const transcribeAudio = async (req, res, next) => {
     }
 
     const { toFile } = require('groq-sdk');
-    const base64Data = audioBase64.includes(';base64,') ? audioBase64.split(';base64,')[1] : audioBase64;
+    const base64Data = audioBase64.includes(';base64,')
+      ? audioBase64.split(';base64,')[1]
+      : audioBase64;
     const buffer = Buffer.from(base64Data, 'base64');
 
-    if (buffer.length < 100) {
+    console.log(`[Whisper] Audio buffer size: ${buffer.length} bytes, mimeType: ${mimeType}`);
+
+    // Need at least 1KB of real audio data (avoid sending silence/noise)
+    if (buffer.length < 1000) {
+      console.log('[Whisper] Buffer too small, skipping transcription');
       return res.json({ success: true, text: '' });
     }
 
-    const cleanType = mimeType.split(';')[0] || 'audio/webm';
+    const cleanType = mimeType.split(';')[0].trim() || 'audio/webm';
     let ext = 'webm';
     if (cleanType.includes('mp4') || cleanType.includes('m4a')) ext = 'm4a';
     else if (cleanType.includes('ogg')) ext = 'ogg';
     else if (cleanType.includes('wav')) ext = 'wav';
+    else if (cleanType.includes('mp3') || cleanType.includes('mpeg')) ext = 'mp3';
+    // webm is default — handles both webm and webm;codecs=opus
+
+    console.log(`[Whisper] Sending ${ext} file (${(buffer.length / 1024).toFixed(1)}KB) to Groq Whisper...`);
 
     const file = await toFile(buffer, `speech.${ext}`, { type: cleanType });
 
-    const transcription = await client.audio.transcriptions.create({
-      file,
-      model: 'whisper-large-v3-turbo',
-      prompt: 'Interview practice verbal answer from candidate:',
-      temperature: 0.2,
-    });
+    // ── Custom 30-second timeout via AbortController ────────────────────────
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      console.warn('[Whisper] Request aborted — exceeded 30s timeout');
+    }, 30_000);
 
-    res.json({
-      success: true,
-      text: transcription.text ? transcription.text.trim() : '',
-    });
+    let transcription;
+    try {
+      transcription = await client.audio.transcriptions.create(
+        {
+          file,
+          model: 'whisper-large-v3-turbo',
+          prompt: 'Transcribe this interview practice verbal answer from a software engineering candidate:',
+          temperature: 0.0,
+          response_format: 'text',
+        },
+        { signal: controller.signal }  // Attach abort signal for timeout control
+      );
+    } finally {
+      clearTimeout(timeoutId);  // Always clear — prevents memory leak on success
+    }
+
+    // Groq returns a string when response_format is 'text'
+    const text = typeof transcription === 'string'
+      ? transcription.trim()
+      : (transcription.text ? transcription.text.trim() : '');
+
+    console.log(`[Whisper] Transcription SUCCESS: "${text.substring(0, 80)}..."`)
+
+    res.json({ success: true, text });
   } catch (error) {
-    next(error);
+    // Distinguish between timeout abort and actual Groq failures for clean debugging
+    if (error?.name === 'AbortError' || error?.code === 'ABORT_ERR') {
+      console.warn('[Whisper] Timeout: request exceeded 30s — returning empty transcript');
+    } else {
+      console.error('[Whisper] Transcription FAILED:', error?.message || error);
+    }
+    // Both cases: return empty text so client silently falls back to live-preview
+    res.json({ success: true, text: '', timedOut: error?.name === 'AbortError' });
   }
 };
 
 module.exports = { savePractice, getHistory, getStats, transcribeAudio };
+
