@@ -1,5 +1,7 @@
 # 🚀 RandomPrep - AI-Powered Technical Interview Preparation Platform
 
+> **🌐 Live Demo: [https://randomprep.vercel.app](https://randomprep.vercel.app)**
+
 RandomPrep is a futuristic, interactive, subject-wise technical preparation platform designed to help software engineers, computer science students, and interview candidates master core technical subjects and crack high-paying tech interviews.
 
 ---
